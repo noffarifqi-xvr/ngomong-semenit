@@ -435,7 +435,7 @@ function loop(){
 }
 function done(){
   phase('done');$('clock').textContent='0:00';$('clock').classList.remove('warn');setTicks(1);
-  const n=S.get('ns_count',0)+1;S.set('ns_count',n);S.set('ns_last',card);
+  const n=S.get('ns_count',0)+1;S.set('ns_count',n);S.set('ns_last',card);$('r-topic').value=card.text;
   const prog=S.get('ns_prog',null);if(prog){const d=dayNo(prog);if(d>=1&&d<=90&&!prog.done.includes(d)){prog.done.push(d);S.set('ns_prog',prog)}}
   stats();release();
 }
