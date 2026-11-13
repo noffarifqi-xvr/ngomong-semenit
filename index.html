@@ -33,7 +33,8 @@
 [hidden]{display:none!important}
 html,body{min-height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;font-weight:600}
-button{font-family:inherit;color:inherit}
+button{font-family:inherit;color:inherit;touch-action:manipulation}
+.card,.node,.chip{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:3px solid var(--sky);outline-offset:2px}
 h1,h2,h3{margin:0;font-weight:900;letter-spacing:-.01em;text-wrap:balance}
 h2{font-size:1.5rem} h3{font-size:1.1rem}
@@ -190,6 +191,7 @@ body.running .modes,body.running #reroll,body.running .setbox{opacity:.35;pointe
 :root[data-theme="dark"] .node.lock{--d:#262930}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .node.lock{--d:#262930}}
 .node.done{--c:var(--gold);--d:var(--gold-d)}
+.node.miss{--c:var(--bg);color:var(--mute);border:3px dashed var(--line)}
 .node.cur{--c:var(--u);--d:var(--ud)}
 .node.cur::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:5px solid var(--line)}
 .node .start{position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);background:var(--bg);color:var(--u);border:2px solid var(--line);
@@ -322,7 +324,7 @@ textarea{min-height:80px;resize:vertical}
         <svg class="miko" id="mikoBtn" role="img" aria-label="Miko si mikrofon"><use href="#miko"/></svg>
         <div class="bubble" id="bubble">Topik lu hari ini. Ketuk kartunya kalau mau ganti!</div>
       </div>
-      <div class="card" id="card" aria-live="polite" title="Ketuk buat acak">
+      <div class="card" id="card" aria-live="polite" title="Ketuk buat acak" tabindex="0" role="button" aria-label="Kartu topik, tekan Enter buat acak">
         <span class="tag" id="cue-mode">Kata acak</span>
         <div class="word" id="word">Payung</div>
         <div class="sub" id="sub">Ngomong apa aja soal kata ini sampe waktunya habis.</div>
@@ -560,7 +562,7 @@ function setHint(){
 const C=2*Math.PI*96;$('arc').style.strokeDasharray=C;
 function setArc(frac){$('arc').style.strokeDashoffset=C*(1-Math.max(0,Math.min(1,frac)))}
 let ac=null;
-function tone(f,d,t0=0,type='sine',v=.3){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime+t0,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+function tone(f,d,t0=0,type='sine',v=.3){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const t=ac.currentTime+t0,o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
 const beep=(f=880,d=.18,n=1)=>{for(let i=0;i<n;i++)tone(f,d,i*.26)};
 const fanfare=()=>[523,659,784,1047].forEach((f,i)=>tone(f,.22,i*.11,'triangle',.28));
 function phase(p){
@@ -570,14 +572,14 @@ function phase(p){
   $('start').hidden=run;$('stop').hidden=!run;$('skip').hidden=p!=='prep';
 }
 function info(){$('phaseinfo').textContent='Persiapan '+fmt(cfg.prep)+' · Ngomong '+fmt(cfg.talk);$('setsum').textContent=fmt(cfg.prep)+' + '+fmt(cfg.talk)}
-function run(p,secs){phase(p);total=secs;endAt=performance.now()+secs*1000;loop()}
+let iv=0;
+function run(p,secs,from){phase(p);total=secs;endAt=(from||performance.now())+secs*1000;clearInterval(iv);iv=setInterval(loop,100);loop()}
 function loop(){
-  cancelAnimationFrame(raf);const left=(endAt-performance.now())/1000;
+  const left=(endAt-performance.now())/1000;
   $('clock').textContent=fmt(left);$('ring').classList.toggle('warn',state==='talk'&&left<=10);
   setArc(state==='prep'?left/total:1-Math.max(0,left)/total);
   if(state==='talk'&&left<=3&&left>0){const s=Math.ceil(left);if(s!==loop.l){loop.l=s;beep(660,.08)}}
-  if(left<=0){if(state==='prep'){beep(990,.25);run('talk',cfg.talk);return}if(state==='talk'){done();return}}
-  raf=requestAnimationFrame(loop);
+  if(left<=0){if(state==='prep'){beep(990,.25);run('talk',cfg.talk,endAt);return}if(state==='talk'){clearInterval(iv);done();return}}
 }
 function done(){
   phase('done');$('clock').textContent='0:00';setArc(1);release();
@@ -601,13 +603,14 @@ function confetti(){
   const P=Array.from({length:120},()=>({x:W/2+(Math.random()-.5)*80,y:H*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*Math.PI,s:6+Math.random()*7,c:pick(cols)}));
   let f=0;(function tick(){x.clearRect(0,0,W,H);P.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=.15;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});if(++f<160)confetti.r=requestAnimationFrame(tick);else x.clearRect(0,0,W,H)})();
 }
-function stop(){cancelAnimationFrame(raf);phase('idle');$('clock').textContent=fmt(cfg.prep);setArc(1);release()}
+function stop(){clearInterval(iv);phase('idle');$('clock').textContent=fmt(cfg.prep);setArc(1);release()}
 async function start(){
   if(state==='done'){deal();stop()}
   beep(880,.12);loop.l=null;
   try{if('wakeLock' in navigator)wake=await navigator.wakeLock.request('screen')}catch(e){wake=null}
   run('prep',cfg.prep);
 }
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&(state==='prep'||state==='talk')){try{if('wakeLock' in navigator)wake=await navigator.wakeLock.request('screen')}catch(e){}loop()}});
 function release(){try{wake&&wake.release()}catch(e){}wake=null}
 function paintChips(){
   document.querySelectorAll('.modes .chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===cfg.mode)));
@@ -620,6 +623,7 @@ $('start').onclick=start;$('stop').onclick=stop;
 $('skip').onclick=()=>{beep(990,.25);run('talk',cfg.talk)};
 $('reroll').onclick=()=>{if(state==='prep'||state==='talk')return;if(state==='done')stop();deal()};
 $('card').addEventListener('click',e=>{if(state==='prep'||state==='talk')return;const b=e.target.closest('.w');if(b){swapOne(+b.dataset.i);return}if(state==='done')stop();deal()});
+$('card').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target===$('card')&&state!=='prep'&&state!=='talk'){e.preventDefault();if(state==='done')stop();deal()}});
 $('mikoBtn').onclick=function(){this.classList.remove('wig');void this.getBoundingClientRect();this.classList.add('wig');$('bubble').textContent=pick(TIPS)};
 $('p-next').onclick=()=>{closeParty();deal();stop()};
 $('p-rapor').onclick=()=>{closeParty();stop();location.hash='#rapor'};
@@ -648,9 +652,9 @@ function renderPath(){
     h+='<div class="nodes">';
     for(let j=0;j<7;j++){const dn=i*7+j+1;if(dn>90)break;
       const isDone=done.has(dn),isCur=p&&dn===cur&&!isDone,lock=!p||(!isDone&&dn>today);
-      const cls=isDone?'done':isCur?'cur':lock?'lock':'';
+      const cls=isDone?'done':isCur?'cur':lock?'lock':'miss';
       const icon=isDone?'<svg><use href="#i-check"/></svg>':lock?'<svg style="width:24px;height:24px"><use href="#i-lock"/></svg>':(j===6?'<svg><use href="#i-star"/></svg>':dn);
-      h+=`<button class="node ${cls}" data-day="${dn}" style="transform:translateX(${OFF[j]}px)" aria-label="Hari ${dn}${isDone?', selesai':lock?', terkunci':''}">${icon}${isCur?'<span class="start">MULAI</span>':''}</button>`}
+      h+=`<button class="node ${cls}" data-day="${dn}" style="transform:translateX(${OFF[j]}px)" aria-label="Hari ${dn}${isDone?', selesai':lock?', terkunci':isCur?'':', kelewat'}">${icon}${isCur?'<span class="start">MULAI</span>':''}</button>`}
     h+='</div></div>';
   });
   $('path').innerHTML=h;
@@ -700,12 +704,12 @@ $('e-min').onclick=()=>{eee=Math.max(0,eee-1);$('e-val').textContent=eee};
 $('rform').addEventListener('submit',e=>{
   e.preventDefault();if(scores.some(s=>!s)){toast('Isi semua nilai 1–5 dulu');return}
   const log=S.get('ns_log',[]);log.push({d:todayKey(),topic:$('r-topic').value.trim()||'Tanpa topik',scores:scores.slice(),eee,note:$('r-note').value.trim()});
-  S.set('ns_log',log);S.set('ns_xp',S.get('ns_xp',0)+5);scores=CRIT.map(()=>0);eee=0;$('e-val').textContent=0;$('r-note').value='';$('r-topic').value='';
+  S.set('ns_log',log);S.set('ns_xp',S.get('ns_xp',0)+5);const lt=S.get('ns_last',null);if(lt){lt.used=true;S.set('ns_last',lt)}scores=CRIT.map(()=>0);eee=0;$('e-val').textContent=0;$('r-note').value='';$('r-topic').value='';
   renderCrit();renderLog();stats();toast('Rapor kesimpen · +5 XP');
 });
 const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
 function renderLog(){
-  const log=S.get('ns_log',[]),last=S.get('ns_last',null);if(last&&!$('r-topic').value)$('r-topic').value=last.text;
+  const log=S.get('ns_log',[]),last=S.get('ns_last',null);if(last&&!last.used&&!$('r-topic').value)$('r-topic').value=last.text;
   const lb=S.get('ns_backup',null);$('x-last').textContent=lb?'Backup terakhir: '+lb:'Belum pernah backup.';
   if(!log.length){$('log').innerHTML='<div class="empty">Belum ada rapor. Abis latihan dan nonton rekaman, isi form rapornya.</div>';$('chart').innerHTML='<div class="empty">Grafik muncul setelah 2 rapor.</div>';return}
   $('log').innerHTML=log.map((r,i)=>({r,i})).reverse().map(({r,i})=>`<div class="entry"><div class="avg">${avg(r.scores).toFixed(1)}</div><div style="min-width:0"><div class="t">${esc(r.topic)}</div><div class="meta">${esc(r.d)} · ${r.eee}× "eee"${r.note?' · '+esc(r.note):''}</div></div><button class="x" data-i="${i}">Hapus</button></div>`).join('');
