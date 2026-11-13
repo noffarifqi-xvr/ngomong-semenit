@@ -179,6 +179,25 @@ textarea{min-height:76px;resize:vertical}
 .empty{color:var(--mute);font-size:.9rem;border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center}
 .toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ok);color:#0B1F14;font-weight:700;padding:10px 16px;border-radius:8px;z-index:20}
 @media (prefers-reduced-motion:reduce){.tally.air i{animation:none}}
+/* split layout: one column on phone, two on laptop */
+.split{display:flex;flex-direction:column;gap:20px}
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+@media (min-width:960px){
+  .wrap{max-width:1180px;gap:26px}
+  nav.tabs{max-width:620px}
+  .split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+  .split .col:last-child{position:sticky;top:calc(env(safe-area-inset-top,0px) + 64px)}
+  .split.prog .col:last-child,#v-rapor .split .col:last-child{position:static}
+  .cue{min-height:320px;padding:22px 28px 32px}
+  .cue-word{font-size:clamp(3rem,5.2vw,5.4rem)}
+  .cue-word.three{font-size:clamp(2.2rem,3.6vw,3.6rem)}
+  .cue-word.q{font-size:clamp(1.6rem,2.4vw,2.3rem)}
+  .clock{font-size:clamp(4.5rem,8vw,7rem)}
+  .sheet{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .lede{max-width:72ch}
+}
+@media (min-width:640px) and (max-width:959px){.wrap{max-width:760px}}
+
 </style>
 </head>
 <body>
@@ -210,6 +229,8 @@ textarea{min-height:76px;resize:vertical}
       <button data-mode="situasi">Situasi</button>
     </div>
 
+    <div class="split">
+    <div class="col">
     <div class="cuewrap">
       <div class="cue" id="cue" aria-live="polite" title="Ketuk kartu buat acak">
         <div class="cue-top"><span id="cue-no">Kartu 01</span><span class="holes"><i></i><i></i></span><span id="cue-mode">Kata acak</span></div>
@@ -220,6 +241,9 @@ textarea{min-height:76px;resize:vertical}
       <button class="reroll" id="reroll" title="Acak (R)">Acak lagi</button>
     </div>
 
+    <p class="note">Nyalain kamera HP lu, taro layar ini di samping kamera biar kartunya ikut kerekam, terus pencet <b>Mulai</b>. Lampu merah nyala artinya lu udah on air. Shortcut: <kbd>Spasi</kbd> mulai/berhenti, <kbd>R</kbd> ganti kartu.</p>
+    </div>
+    <div class="col">
     <div class="clockbox">
       <div class="clockrow">
         <div class="tally" id="tally"><i></i><span id="phase">STANDBY</span></div>
@@ -255,7 +279,8 @@ textarea{min-height:76px;resize:vertical}
           <button data-v="acak">Acak</button><button data-v="prep">PREP</button><button data-v="waktu">Dulu-Kini-Nanti</button><button data-v="cerita">Cerita</button><button data-v="off">Mati</button>
         </div></div>
     </div>
-    <p class="note">Nyalain kamera HP lu, taro layar ini di samping kamera biar kartunya ikut kerekam, terus pencet <b>Mulai</b>. Lampu merah nyala artinya lu udah on air. Shortcut: <kbd>Spasi</kbd> mulai/berhenti, <kbd>R</kbd> ganti kartu.</p>
+    </div>
+    </div>
   </section>
 
   <!-- PROGRAM -->
@@ -275,8 +300,14 @@ textarea{min-height:76px;resize:vertical}
         <button class="btn line sm" id="prog-reset" hidden>Ulang dari awal</button>
       </div>
     </div>
+    <div class="split prog">
+    <div class="col">
     <div class="weekgrid" id="weekgrid"></div>
+    </div>
+    <div class="col">
     <div class="panel" id="weekdetail"></div>
+    </div>
+    </div>
   </section>
 
   <!-- CONTEKAN -->
@@ -307,6 +338,8 @@ textarea{min-height:76px;resize:vertical}
       <h2>Rapor latihan</h2>
       <p class="lede">Tonton video lu sekali tanpa jeda, terus kasih nilai jujur 1–5. Hitung "eee", "anu", "jadi", "kayak" pake tombol plus. Semua catatan kesimpen di browser ini aja.</p>
     </div>
+    <div class="split">
+    <div class="col">
     <form class="panel" id="rform">
       <label class="f">Topik<input type="text" id="r-topic" placeholder="Misal: Payung"></label>
       <div class="crit" id="crit"></div>
@@ -315,11 +348,22 @@ textarea{min-height:76px;resize:vertical}
       <label class="f">Catatan buat besok<textarea id="r-note" placeholder="Misal: tangan masuk saku terus, pembuka kelamaan."></textarea></label>
       <div class="controls"><button class="btn go" type="submit">Simpan rapor</button></div>
     </form>
+    </div>
+    <div class="col">
     <div class="panel">
       <div class="progline"><h3>Perkembangan</h3><span class="kicker">Nilai rata-rata (kuning) · jumlah "eee" (merah)</span></div>
       <div id="chart"></div>
     </div>
     <div class="log" id="log"></div>
+    <div class="panel" id="xfer">
+      <h3>Pindahin data ke HP atau laptop lain</h3>
+      <p class="note" style="margin:0">Progres sama rapor kesimpen di browser masing-masing. Biar nyambung, salin kode dari perangkat lama terus tempel di perangkat baru.</p>
+      <div class="controls"><button class="btn line sm" type="button" id="x-copy">Salin kode data</button></div>
+      <label class="f">Tempel kode dari perangkat lain<textarea id="x-code" placeholder="Tempel kode di sini"></textarea></label>
+      <div class="controls"><button class="btn go sm" type="button" id="x-load">Masukin data</button></div>
+    </div>
+    </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -530,7 +574,7 @@ const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
 function renderLog(){
   const log=S.get('ns_log',[]);
   const last=S.get('ns_last',null);if(last&&!$('r-topic').value)$('r-topic').value=last.text;
-  if(!log.length){$('log').innerHTML='<div class="empty">Belum ada rapor. Abis latihan dan nonton rekaman, isi form di atas.</div>';$('chart').innerHTML='<div class="empty">Grafik muncul setelah 2 rapor.</div>';return}
+  if(!log.length){$('log').innerHTML='<div class="empty">Belum ada rapor. Abis latihan dan nonton rekaman, isi form rapornya.</div>';$('chart').innerHTML='<div class="empty">Grafik muncul setelah 2 rapor.</div>';return}
   $('log').innerHTML=log.map((r,i)=>({r,i})).reverse().map(({r,i})=>`<div class="entry"><div class="avg">${avg(r.scores).toFixed(1)}</div><div style="min-width:0"><div class="t">${esc(r.topic)}</div><div class="meta">${esc(r.d)} · ${r.eee}× "eee"${r.note?' · '+esc(r.note):''}</div></div><button class="x" data-i="${i}">Hapus</button></div>`).join('');
   $('log').querySelectorAll('.x').forEach(b=>b.onclick=()=>{if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='Yakin?';return}const l=S.get('ns_log',[]);l.splice(+b.dataset.i,1);S.set('ns_log',l);renderLog()});
   drawChart(log.slice(-30));
@@ -550,6 +594,25 @@ function drawChart(log){
   $('chart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik nilai rata-rata dan jumlah eee">${g}</svg>`;
 }
 
+
+/* ---------- pindah data ---------- */
+const KEYS=['ns_cfg','ns_count','ns_prog','ns_log','ns_last'];
+$('x-copy').onclick=async()=>{
+  const o={};KEYS.forEach(k=>{const v=S.get(k,null);if(v!=null)o[k]=v});
+  const code='NS1:'+btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  const ta=$('x-code');
+  try{await navigator.clipboard.writeText(code);toast('Kode kesalin. Tempel di perangkat lain')}
+  catch(e){ta.value=code;ta.focus();ta.select();toast('Kode ada di kotak bawah, salin manual')}
+};
+$('x-load').onclick=function(){
+  const raw=$('x-code').value.trim();
+  let o;try{if(!raw.startsWith('NS1:'))throw 0;o=JSON.parse(decodeURIComponent(escape(atob(raw.slice(4)))))}catch(e){toast('Kodenya gak kebaca. Salin ulang dari perangkat lama');return}
+  if(!this.dataset.sure){this.dataset.sure=1;this.textContent='Data di sini bakal ketimpa. Pencet lagi';setTimeout(()=>{delete this.dataset.sure;this.textContent='Masukin data'},4000);return}
+  delete this.dataset.sure;this.textContent='Masukin data';
+  KEYS.forEach(k=>{if(k in o)S.set(k,o[k])});
+  cfg=Object.assign({mode:'kata',prep:60,talk:60,lvl:'campur',fw:'acak'},S.get('ns_cfg',{}));
+  $('x-code').value='';$('r-topic').value='';selWeek=null;paintChips();deal();stats();renderLog();toast('Data masuk');
+};
 /* ---------- shell ---------- */
 function stats(){
   $('st-sesi').textContent=S.get('ns_count',0);
