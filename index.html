@@ -74,9 +74,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tabbar a[aria-current="page"],.side a[aria-current="page"]{color:var(--sky);background:var(--sky-s);border-color:var(--sky)}
 
 @media (min-width:900px){
-  .app{grid-template-columns:240px minmax(0,1fr) 320px;gap:24px;max-width:1240px;margin:0 auto}
+  .app{grid-template-columns:250px minmax(0,1fr) 320px;gap:32px;max-width:1280px;margin:0 auto}
   .side{display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;padding:22px 12px;border-right:2px solid var(--line)}
-  .side .logo{padding:4px 12px 18px;font-size:1.4rem}
+  .side .logo{padding:4px 10px 18px;font-size:1.15rem}
   .side a{flex-direction:row;gap:14px;font-size:.92rem;padding:10px 14px}
   .rail{display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;padding:22px 16px 22px 0;overflow:auto}
   .tabbar,.topbar .logo,.topbar{display:none}
@@ -109,7 +109,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .chip[aria-pressed="true"]{border-color:var(--sky);background:var(--sky-s);color:var(--sky-d)}
 
 /* mascot + card */
-.speaker{display:flex;align-items:flex-end;gap:10px}
+.speaker{display:flex;align-items:flex-end;gap:10px;min-height:88px}
+.speaker .bubble{flex:1;min-width:0}
 .miko{width:72px;height:88px;flex:none;cursor:pointer}
 .miko.wig{animation:wig .5s}
 @keyframes wig{25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
@@ -318,7 +319,7 @@ textarea{min-height:80px;resize:vertical}
         <button class="chip" data-mode="situasi">Situasi</button>
       </div>
       <div class="speaker">
-        <svg class="miko" id="miko" role="img" aria-label="Miko si mikrofon"><use href="#miko"/></svg>
+        <svg class="miko" id="mikoBtn" role="img" aria-label="Miko si mikrofon"><use href="#miko"/></svg>
         <div class="bubble" id="bubble">Topik lu hari ini. Ketuk kartunya kalau mau ganti!</div>
       </div>
       <div class="card" id="card" aria-live="polite" title="Ketuk buat acak">
@@ -619,7 +620,7 @@ $('start').onclick=start;$('stop').onclick=stop;
 $('skip').onclick=()=>{beep(990,.25);run('talk',cfg.talk)};
 $('reroll').onclick=()=>{if(state==='prep'||state==='talk')return;if(state==='done')stop();deal()};
 $('card').addEventListener('click',e=>{if(state==='prep'||state==='talk')return;const b=e.target.closest('.w');if(b){swapOne(+b.dataset.i);return}if(state==='done')stop();deal()});
-$('miko').onclick=function(){this.classList.remove('wig');void this.getBoundingClientRect();this.classList.add('wig');$('bubble').textContent=pick(TIPS)};
+$('mikoBtn').onclick=function(){this.classList.remove('wig');void this.getBoundingClientRect();this.classList.add('wig');$('bubble').textContent=pick(TIPS)};
 $('p-next').onclick=()=>{closeParty();deal();stop()};
 $('p-rapor').onclick=()=>{closeParty();stop();location.hash='#rapor'};
 document.addEventListener('keydown',e=>{
@@ -754,6 +755,7 @@ function route(){
 }
 window.addEventListener('hashchange',route);
 // carry over XP for people who used the earlier version
+if(!Object.keys(S.get('ns_days',{})).length){const d={};S.get('ns_log',[]).forEach(r=>{d[r.d]=(d[r.d]||0)+1});const p=S.get('ns_prog',null);if(p)p.done.forEach(n=>{const c=new Date(p.start+'T00:00:00');c.setDate(c.getDate()+n-1);const k=dk(c);d[k]=Math.max(d[k]||0,1)});if(Object.keys(d).length)S.set('ns_days',d)}
 if(S.get('ns_xp',null)==null){const c=S.get('ns_count',0);if(c)S.set('ns_xp',c*10+S.get('ns_log',[]).length*5)}
 $('r-tip').textContent=pick(TIPS);
 paintChips();deal();renderSheet();renderCrit();stats();route();
