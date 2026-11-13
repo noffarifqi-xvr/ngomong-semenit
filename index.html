@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Latihan public speaking: kartu topik acak, timer persiapan dan ngomong, program 90 hari, contekan, dan rapor.">
+<title>Ngomong Semenit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a TV studio control room. Dark teal room, yellow cue card for the topic, red tally light while recording,
+   mono studio clock. One column, four rooms switched by a tab strip: Latihan / Program 90 / Contekan / Rapor. */
+:root{
+  --room:#0C1E21; --panel:#12292C; --panel2:#173337; --line:#24433F; --ink:#E8EFEA; --mute:#8DA6A0;
+  --cue:#F2C744; --cue-ink:#1C1A12; --air:#FF4B3E; --ok:#5BC98E;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--room);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-image:radial-gradient(ellipse 80% 40% at 50% 0%, #17383C 0%, transparent 70%)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--room)}
+.wrap{max-width:720px;margin:0 auto;padding-block:18px 56px;display:flex;flex-direction:column;gap:22px}
+button{font-family:inherit;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--cue);outline-offset:2px}
+
+/* masthead */
+.mast{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand small{font:700 .7rem var(--mono);letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+h1{margin:0;font-family:var(--display);font-stretch:125%;font-weight:900;font-size:clamp(1.7rem,6vw,2.3rem);
+  letter-spacing:-.01em;line-height:1;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--cue)}
+.statline{font:500 .78rem var(--mono);color:var(--mute);display:flex;gap:14px;flex-wrap:wrap}
+.statline b{color:var(--ink);font-weight:700}
+
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--room)}
+nav.tabs a{padding:11px 6px;text-align:center;text-decoration:none;color:var(--mute);font:600 .88rem var(--body);
+  border-right:1px solid var(--line)}
+nav.tabs a:last-child{border-right:0}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--room)}
+@media (max-width:420px){nav.tabs a{font-size:.8rem;padding:10px 2px}}
+
+h2{font-family:var(--display);font-stretch:112%;font-weight:800;font-size:1.35rem;margin:0;text-transform:uppercase;letter-spacing:.005em;text-wrap:balance}
+h3{font-family:var(--display);font-stretch:105%;font-weight:700;font-size:1.05rem;margin:0}
+.kicker{font:700 .7rem var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.lede{color:var(--mute);margin:4px 0 0;max-width:62ch}
+.view{display:flex;flex-direction:column;gap:20px}
+
+/* chips */
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:transparent;padding:7px 12px;border-radius:8px;font:600 .85rem var(--body);cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--cue);color:var(--cue-ink);border-color:var(--cue)}
+.chips.small button{padding:5px 10px;font-size:.8rem}
+
+/* cue card */
+.cuewrap{position:relative;padding:10px 4px 4px}
+.cue{background:var(--cue);color:var(--cue-ink);border-radius:6px;padding:16px 20px 26px;transform:rotate(-.8deg);
+  box-shadow:0 18px 40px -18px rgba(0,0,0,.7), 0 2px 0 rgba(0,0,0,.25);
+  background-image:repeating-linear-gradient(transparent 0 33px, rgba(28,26,18,.09) 33px 34px);
+  display:flex;flex-direction:column;gap:8px;min-height:190px}
+.cue-top{display:flex;justify-content:space-between;align-items:center;font:700 .72rem var(--mono);letter-spacing:.14em;text-transform:uppercase;gap:8px}
+.cue-top .holes{display:flex;gap:9px}.cue-top .holes i{width:10px;height:10px;border-radius:50%;background:var(--room);opacity:.85}
+.cue-word{font-family:var(--display);font-stretch:125%;font-weight:900;text-transform:uppercase;line-height:.98;
+  font-size:clamp(2.2rem,10.5vw,4.4rem);letter-spacing:-.01em;overflow-wrap:anywhere;text-wrap:balance;margin:auto 0}
+.cue-word.q{font-stretch:100%;text-transform:none;font-weight:800;font-size:clamp(1.4rem,5.6vw,2.1rem);line-height:1.15}
+.cue-word.three{font-size:clamp(1.8rem,8vw,3.2rem)}
+.cue-word .sep{opacity:.35}
+.cue-sub{font:600 .95rem var(--body)}
+.cue{cursor:pointer;user-select:none;transition:transform .12s}
+.cue:active{transform:rotate(-.8deg) scale(.985)}
+body.running .cue{cursor:default}
+.cue.deal{animation:deal .28s ease-out}
+@keyframes deal{0%{transform:rotate(-4deg) translateY(10px);opacity:.4}100%{transform:rotate(-.8deg);opacity:1}}
+.cue-word .w{all:unset;cursor:pointer;border-bottom:4px dashed rgba(28,26,18,.28);line-height:1.1}
+.cue-word .w:hover{border-bottom-color:var(--cue-ink)}
+.cue-word .w:focus-visible{outline:3px solid var(--cue-ink);outline-offset:3px}
+.cue-word .w.pop{animation:pop .25s ease-out}
+@keyframes pop{0%{opacity:.2;transform:translateY(6px)}100%{opacity:1}}
+.tap{font:600 .78rem var(--body);opacity:.65}
+@media (prefers-reduced-motion:reduce){.cue.deal,.cue-word .w.pop{animation:none}}
+.pos{display:inline-block;background:var(--cue-ink);color:var(--cue);font:700 .8rem var(--mono);letter-spacing:.12em;padding:3px 8px;border-radius:4px;margin-left:6px}
+.cuewrap{display:flex;flex-direction:column;gap:12px}
+.reroll{align-self:stretch;background:transparent;border:2px solid var(--cue);color:var(--cue);
+  border-radius:10px;padding:12px 16px;font:700 1rem var(--body);cursor:pointer}
+
+/* studio clock */
+.clockbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.clockrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tally{display:inline-flex;align-items:center;gap:8px;font:700 .75rem var(--mono);letter-spacing:.16em;padding:6px 11px;border-radius:6px;border:1px solid var(--line);color:var(--mute)}
+.tally i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.tally.prep{color:var(--cue);border-color:var(--cue)}.tally.prep i{background:var(--cue)}
+.tally.air{color:#fff;background:var(--air);border-color:var(--air)}.tally.air i{background:#fff;animation:blink 1s steps(1) infinite}
+.tally.done{color:var(--ok);border-color:var(--ok)}.tally.done i{background:var(--ok)}
+@keyframes blink{50%{opacity:.2}}
+.clock{font:700 clamp(3.6rem,19vw,6.2rem)/1 var(--mono);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.clock.warn{color:var(--air)}
+.ticks{display:grid;grid-template-columns:repeat(30,1fr);gap:3px}
+.ticks i{height:14px;border-radius:2px;background:var(--line)}
+.ticks i.on{background:var(--cue)}.ticks.air i.on{background:var(--air)}
+.hintcard{border-top:1px dashed var(--line);padding-top:10px;font-size:.9rem;color:var(--mute)}
+.hintcard b{color:var(--ink)}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:15px 24px;font:700 1rem var(--body);cursor:pointer;flex:1 1 160px}
+.btn.go{background:var(--cue);color:var(--cue-ink)}
+.btn.line{background:transparent;border:1px solid var(--line)}
+.btn.sm{padding:9px 14px;font-size:.88rem;flex:0 0 auto}
+
+.settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.settings > div{display:flex;flex-direction:column;gap:8px;min-width:0}
+.settings .full{grid-column:1/-1}
+@media (max-width:520px){.settings{grid-template-columns:1fr}}
+body.running .settings,body.running .modes,body.running .reroll{opacity:.3;pointer-events:none}
+.note{font-size:.85rem;color:var(--mute)}
+.note kbd{font:600 .75rem var(--mono);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+
+/* program */
+.weekgrid{display:flex;flex-direction:column;gap:6px}
+.wk{display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));gap:5px;align-items:center}
+.wk > span{font:700 .7rem var(--mono);color:var(--mute);letter-spacing:.06em}
+.day{aspect-ratio:1;max-width:100%;border:1px solid var(--line);border-radius:6px;background:transparent;font:600 .72rem var(--mono);color:var(--mute);cursor:pointer;padding:0}
+.day.done{background:var(--ok);border-color:var(--ok);color:#0B1F14}
+.day.today{outline:2px solid var(--cue);outline-offset:1px;color:var(--ink)}
+.day.sel{border-color:var(--ink)}
+.wk.cur > span{color:var(--cue)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.panel ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.preset{display:flex;gap:8px;flex-wrap:wrap}
+.tag{font:600 .75rem var(--mono);border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--mute)}
+.progline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.meter{height:8px;background:var(--line);border-radius:4px;overflow:hidden;flex:1 1 160px}
+.meter b{display:block;height:100%;background:var(--ok)}
+
+/* contekan */
+.sheet{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.sheet{grid-template-columns:1fr}}
+.fw{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.fw ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:3px}
+.fw .eg{font-size:.86rem;color:var(--mute);border-left:2px solid var(--cue);padding-left:10px}
+.lines{display:flex;flex-direction:column;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.lines p{margin:0;padding:11px 16px;border-bottom:1px solid var(--line)}
+.lines p:last-child{border-bottom:0}
+.swap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.swap div{padding:9px 14px;border-bottom:1px solid var(--line);min-width:0}
+.swap div:nth-child(odd){color:var(--air);font-family:var(--mono);font-size:.88rem;border-right:1px solid var(--line)}
+.swap div:nth-last-child(-n+2){border-bottom:0}
+
+/* rapor */
+.crit{display:flex;flex-direction:column;gap:10px}
+.critrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.critrow small{display:block;color:var(--mute);font-size:.8rem}
+.score{display:flex;gap:4px}
+.score button{width:34px;height:34px;border:1px solid var(--line);border-radius:7px;background:transparent;font:700 .85rem var(--mono);cursor:pointer}
+.score button[aria-pressed="true"]{background:var(--cue);color:var(--cue-ink);border-color:var(--cue)}
+@media (max-width:420px){.critrow{grid-template-columns:1fr}.score button{width:38px}}
+.eee{display:flex;align-items:center;gap:10px}
+.eee button{width:40px;height:40px;border-radius:8px;border:1px solid var(--line);background:transparent;font:700 1.1rem var(--mono);cursor:pointer}
+.eee output{font:700 1.6rem var(--mono);min-width:2.2ch;text-align:center}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:.9rem}
+input[type=text],textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:10px 12px;font:inherit}
+textarea{min-height:76px;resize:vertical}
+.log{display:flex;flex-direction:column;gap:8px}
+.entry{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.entry .avg{font:700 1.3rem var(--mono);color:var(--cue);min-width:2.6ch;text-align:center}
+.entry .meta{font-size:.8rem;color:var(--mute)}
+.entry .t{font-weight:600;overflow-wrap:anywhere}
+.entry .x{background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:.78rem;cursor:pointer;color:var(--mute)}
+.entry .x.sure{border-color:var(--air);color:var(--air)}
+.chart{width:100%;height:auto;display:block}
+.empty{color:var(--mute);font-size:.9rem;border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ok);color:#0B1F14;font-weight:700;padding:10px 16px;border-radius:8px;z-index:20}
+@media (prefers-reduced-motion:reduce){.tally.air i{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="brand">
+      <small>Studio latihan public speaking</small>
+      <h1>Ngomong <em>Semenit</em></h1>
+    </div>
+    <div class="statline"><span>Sesi <b id="st-sesi">0</b></span><span>Program <b id="st-prog">belum mulai</b></span></div>
+  </header>
+
+  <nav class="tabs" aria-label="Bagian">
+    <a href="#latihan" id="nav-latihan">Latihan</a>
+    <a href="#program" id="nav-program">Program 90</a>
+    <a href="#contekan" id="nav-contekan">Contekan</a>
+    <a href="#rapor" id="nav-rapor">Rapor</a>
+  </nav>
+
+  <!-- LATIHAN -->
+  <section class="view" id="v-latihan">
+    <div class="chips modes" role="group" aria-label="Mode">
+      <button data-mode="kata">Kata acak</button>
+      <button data-mode="tiga">3 kata</button>
+      <button data-mode="tanya">Pertanyaan</button>
+      <button data-mode="jual">Jualan</button>
+      <button data-mode="debat">Debat</button>
+      <button data-mode="situasi">Situasi</button>
+    </div>
+
+    <div class="cuewrap">
+      <div class="cue" id="cue" aria-live="polite" title="Ketuk kartu buat acak">
+        <div class="cue-top"><span id="cue-no">Kartu 01</span><span class="holes"><i></i><i></i></span><span id="cue-mode">Kata acak</span></div>
+        <div class="cue-word" id="word">Payung</div>
+        <div class="cue-sub" id="sub">Ngomong apa aja soal kata ini sampe waktunya habis.</div>
+        <div class="tap" id="tap">Ketuk kartu buat acak</div>
+      </div>
+      <button class="reroll" id="reroll" title="Acak (R)">Acak lagi</button>
+    </div>
+
+    <div class="clockbox">
+      <div class="clockrow">
+        <div class="tally" id="tally"><i></i><span id="phase">STANDBY</span></div>
+        <div class="kicker" id="phaseinfo">Persiapan 1:00 · Ngomong 1:00</div>
+      </div>
+      <div class="clock" id="clock">1:00</div>
+      <div class="ticks" id="ticks"></div>
+      <div class="hintcard" id="hint"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn go" id="start">Mulai</button>
+      <button class="btn line" id="skip" hidden>Langsung ngomong</button>
+      <button class="btn line" id="stop" hidden>Berhenti</button>
+      <a class="btn line" id="toRapor" href="#rapor" hidden style="text-align:center;text-decoration:none">Isi rapor sesi ini</a>
+    </div>
+
+    <div class="settings">
+      <div><span class="kicker">Persiapan</span>
+        <div class="chips small" id="prep" role="group" aria-label="Waktu persiapan">
+          <button data-v="15">15 dtk</button><button data-v="30">30 dtk</button><button data-v="60">1 mnt</button><button data-v="90">1,5 mnt</button>
+        </div></div>
+      <div><span class="kicker">Ngomong</span>
+        <div class="chips small" id="talk" role="group" aria-label="Waktu ngomong">
+          <button data-v="30">30 dtk</button><button data-v="60">1 mnt</button><button data-v="90">1,5 mnt</button><button data-v="120">2 mnt</button><button data-v="180">3 mnt</button>
+        </div></div>
+      <div><span class="kicker">Tingkat kata</span>
+        <div class="chips small" id="lvl" role="group" aria-label="Tingkat kata">
+          <button data-v="mudah">Mudah</button><button data-v="campur">Campur</button><button data-v="susah">Susah</button>
+        </div></div>
+      <div><span class="kicker">Struktur pas persiapan</span>
+        <div class="chips small" id="fw" role="group" aria-label="Struktur">
+          <button data-v="acak">Acak</button><button data-v="prep">PREP</button><button data-v="waktu">Dulu-Kini-Nanti</button><button data-v="cerita">Cerita</button><button data-v="off">Mati</button>
+        </div></div>
+    </div>
+    <p class="note">Nyalain kamera HP lu, taro layar ini di samping kamera biar kartunya ikut kerekam, terus pencet <b>Mulai</b>. Lampu merah nyala artinya lu udah on air. Shortcut: <kbd>Spasi</kbd> mulai/berhenti, <kbd>R</kbd> ganti kartu.</p>
+  </section>
+
+  <!-- PROGRAM -->
+  <section class="view" id="v-program" hidden>
+    <div>
+      <span class="kicker">13 minggu · 90 hari</span>
+      <h2>Program 90 hari dari gugup ke lancar</h2>
+      <p class="lede">Tiap minggu ada satu fokus. Latihan 5–10 menit sehari udah cukup: satu atau dua kartu, rekam, tonton ulang, isi rapor. Ketuk kotak hari buat nandain udah latihan.</p>
+    </div>
+    <div class="panel">
+      <div class="progline">
+        <div><span class="kicker">Progres</span><div id="prog-text" style="font-weight:600">Belum mulai</div></div>
+        <div class="meter"><b id="prog-bar" style="width:0"></b></div>
+      </div>
+      <div class="controls">
+        <button class="btn go sm" id="prog-start">Mulai program hari ini</button>
+        <button class="btn line sm" id="prog-reset" hidden>Ulang dari awal</button>
+      </div>
+    </div>
+    <div class="weekgrid" id="weekgrid"></div>
+    <div class="panel" id="weekdetail"></div>
+  </section>
+
+  <!-- CONTEKAN -->
+  <section class="view" id="v-contekan" hidden>
+    <div>
+      <span class="kicker">Buka pas waktu persiapan</span>
+      <h2>Contekan biar gak blank</h2>
+      <p class="lede">Satu menit itu pendek. Lu cuma butuh satu kerangka, satu kalimat pembuka, dan satu penutup. Sisanya isi pake cerita.</p>
+    </div>
+    <h3>Kerangka ngomong</h3>
+    <div class="sheet" id="sheet"></div>
+    <h3>Kalimat pembuka</h3>
+    <div class="lines" id="openers"></div>
+    <h3>Kalimat penutup</h3>
+    <div class="lines" id="closers"></div>
+    <h3>Kalau tiba-tiba blank</h3>
+    <div class="lines" id="rescue"></div>
+    <h3>Ganti "eee" sama ini</h3>
+    <div class="swap" id="swap"></div>
+    <h3>Pas nonton ulang rekaman, cek ini</h3>
+    <div class="lines" id="checks"></div>
+  </section>
+
+  <!-- RAPOR -->
+  <section class="view" id="v-rapor" hidden>
+    <div>
+      <span class="kicker">Abis nonton rekaman HP</span>
+      <h2>Rapor latihan</h2>
+      <p class="lede">Tonton video lu sekali tanpa jeda, terus kasih nilai jujur 1–5. Hitung "eee", "anu", "jadi", "kayak" pake tombol plus. Semua catatan kesimpen di browser ini aja.</p>
+    </div>
+    <form class="panel" id="rform">
+      <label class="f">Topik<input type="text" id="r-topic" placeholder="Misal: Payung"></label>
+      <div class="crit" id="crit"></div>
+      <div class="critrow"><div>Jumlah "eee", "anu", "jadi"<small>Tambah tiap kali kedengeran di rekaman</small></div>
+        <div class="eee"><button type="button" id="e-min" aria-label="Kurangi">−</button><output id="e-val">0</output><button type="button" id="e-plus" aria-label="Tambah">+</button></div></div>
+      <label class="f">Catatan buat besok<textarea id="r-note" placeholder="Misal: tangan masuk saku terus, pembuka kelamaan."></textarea></label>
+      <div class="controls"><button class="btn go" type="submit">Simpan rapor</button></div>
+    </form>
+    <div class="panel">
+      <div class="progline"><h3>Perkembangan</h3><span class="kicker">Nilai rata-rata (kuning) · jumlah "eee" (merah)</span></div>
+      <div id="chart"></div>
+    </div>
+    <div class="log" id="log"></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- data ---------- */
+const MUDAH = "payung,kopi,sandal jepit,kucing,hujan,kunci motor,jam dinding,cermin,bantal,sendok,kulkas,tas sekolah,gitar,sepatu,dompet,kalender,senter,lilin,kipas angin,televisi,radio,buku harian,pensil,gunting,jendela,pintu,tangga,atap,pagar,sumur,sawah,gunung,pantai,sungai,danau,hutan,kebun,pasar,warung,terminal,stasiun,bandara,rumah sakit,sekolah,masjid,lapangan,jembatan,jalan tol,lampu merah,angkot,ojek online,kereta,pesawat,kapal laut,sepeda,perahu,becak,helm,jas hujan,kacamata,topi,jam tangan,batik,sarung,peci,nasi goreng,mie instan,bakso,sate,rendang,tempe,tahu,sambal,kerupuk,martabak,es teh,gorengan,pisang,mangga,durian,kelapa,jeruk,semangka,cokelat,roti,telur,susu,madu,kopi susu,air putih,ayam,kambing,sapi,ikan lele,burung,anjing,semut,nyamuk,kecoa,cicak,kupu-kupu,lebah,kura-kura,monyet,gajah,harimau,ular,bebek,merpati,jangkrik,kodok,tikus,kelinci,ikan cupang,handphone,laptop,charger,earphone,wifi,kuota,password,WhatsApp,selfie,meme,kamera,mikrofon,kalkulator,printer,flashdisk,powerbank,remote TV,kompor,panci,wajan,ulang tahun,pernikahan,wisuda,lebaran,mudik,tahun baru,liburan,kemah,upacara bendera,lomba tujuh belasan,arisan,ronda,kerja bakti,hajatan,kondangan,reuni,pagi,senja,kemarau,musim hujan,banjir,macet,listrik padam,antre,ngantuk,lapar,diskon,toko online,kurir,paket,ongkir,cicilan,sepak bola,badminton,lari pagi,gym,renang,catur,futsal,layang-layang,kelereng,petak umpet,dangdut,konser,karaoke,drama Korea,kartun,sinetron,podcast,komik,foto,robot,notifikasi,baterai lowbat,sinyal hilang,akun palsu,alarm,begadang,sarapan,bekal,ngemil,puasa,resep,cuci piring,setrika,pohon,bunga,batu,pasir,awan,bintang,bulan,matahari,pelangi,petir,kabut,embun,peta,koper,tiket,oleh-oleh,hotel,desa,kampung halaman,celengan,salah kirim chat,telat bangun,ketinggalan bus,lupa password,jerawat,potong rambut,sikat gigi,handuk,parfum,kaos kaki,sendal hilang di masjid,kursi,papan tulis,spidol,rapor,ujian,PR,seragam,kantin,tukang parkir,satpam,tukang bakso,kasir,barista,petani,nelayan,dokter,pilot,youtuber".split(",");
+const SUSAH = "waktu,uang,mimpi,rasa takut,keberanian,kejujuran,kesabaran,persahabatan,cinta,rindu,malu,gengsi,sukses,gagal,harapan,pilihan,kebiasaan,disiplin,kesempatan,kenangan,masa depan,masa kecil,keluarga,tetangga,orang tua,mantan,pahlawan,kesepian,bahagia,sedih,marah,bosan,capek,semangat,malas,gugup,bangga,iri,syukur,pekerjaan,gaji,tabungan,utang,bisnis,AI,algoritma,internet,hoaks,pemimpin,aturan,kebebasan,tanggung jawab,perubahan,tradisi,teknologi,alam,sampah plastik,polusi,keadilan,kepercayaan,kesuksesan instan,zona nyaman,ekspektasi,penyesalan,validasi,kesederhanaan,kemewahan,keputusan,kompetisi,kolaborasi,kreativitas,kemiskinan,kekayaan,kesehatan mental,istirahat,produktif,prokrastinasi,konsistensi,motivasi,ambisi,kegagalan pertama,percaya diri,overthinking,healing,FOMO,ghosting,flexing,gotong royong,rantau,pulang kampung,generasi muda,orang dewasa,cita-cita,warisan,identitas,budaya,bahasa daerah,perbedaan,toleransi,empati,maaf,janji,rahasia,kebohongan,kritik,pujian,kesendirian,keramaian,kecepatan,kesempurnaan,ketidakpastian".split(",");
+const TANYA = ["Ceritain kegagalan terbesar lu dan apa yang lu pelajari.","Kalau lu jadi kepala desa sehari, apa yang lu ubah?","Kenapa orang harus main ke kampung lu?","Apa kebiasaan kecil yang ngubah hidup lu?","Jelasin kerjaan lu ke anak umur 7 tahun.","Kalau dapet uang 10 juta besok, mau buat apa?","Siapa orang yang paling ngaruh di hidup lu, dan kenapa?","Yakinin gw buat bangun jam 5 pagi.","Apa yang bikin lu gugup kalau ngomong di depan orang?","Ceritain hari paling memalukan yang pernah lu alamin.","Apa satu hal yang pengen lu kuasain tahun ini?","Kalau bisa balik ke umur 15, nasihat apa buat diri lu?","Makanan apa yang paling mewakili diri lu?","Kenapa banyak orang susah konsisten?","Apa arti sukses buat lu?","Ceritain perjalanan paling berkesan yang pernah lu lakuin.","Kalau AI bisa ngerjain semua kerjaan, manusia ngapain?","Apa keputusan tersulit yang pernah lu ambil?","Kenalin diri lu tanpa nyebut kerjaan lu.","Apa yang orang sering salah paham tentang lu?","Ceritain guru yang paling lu inget.","Apa hal sederhana yang bikin lu bahagia?","Kalau bisa ngobrol sama satu tokoh sejarah, siapa dan mau nanya apa?","Apa kebiasaan buruk yang lagi lu lawan?","Ceritain momen lu paling bangga sama diri sendiri.","Gimana cara ngadepin orang yang nyebelin di kerjaan?","Ceritain film atau buku yang ngubah cara pikir lu.","Kalau besok libur seharian, rencana lu apa?","Apa yang bakal lu lakuin kalau gak takut gagal?","Barang apa yang paling susah lu buang, dan kenapa?","Apa pelajaran dari orang tua yang baru lu pahami sekarang?","Kapan terakhir lu ngerasa bener-bener capek, dan gimana lu bangkit?","Lagu apa yang selalu bikin lu inget satu momen?","Apa pekerjaan impian lu waktu kecil?","Kalau bisa nambah satu pelajaran di sekolah, pelajaran apa?","Ceritain tempat favorit lu di kampung atau kota lu.","Apa skill yang menurut lu harus dimiliki semua orang?","Kebiasaan apa dari orang lain yang pengen lu tiru?","Kapan lu terakhir nyoba hal baru? Ceritain.","Apa yang bakal lu omongin kalau diundang jadi pembicara di sekolah lama lu?"];
+const BARANG = ["sendal jepit kanan doang","payung bolong satu","kalender tahun lalu","kipas angin yang bunyinya berisik","pulpen yang tintanya tinggal setengah","charger yang harus dipegangin biar nyambung","kursi plastik warna hijau","topi bekas kampanye","sapu lidi","ember bocor","jam weker yang telat 5 menit","bantal yang kempes","kerupuk yang udah melempem","sepatu yang solnya mangap","termos air panas","sisir patah","kaos kaki tanpa pasangan","toples kue lebaran isinya rengginang","kalkulator yang tombol 7-nya macet","remote TV tanpa baterai","helm kebesaran","celengan ayam","peta kertas di zaman GPS","lilin aromaterapi rasa rendang","sikat gigi bulu keras","flashdisk 2 GB","kopi sachet terakhir di dunia","batu biasa dari sungai","sendok bebek","gantungan kunci tanpa kunci","tikar pandan","kaset pita","surat cinta tanpa nama","stiker WhatsApp edisi terbatas","air galon kosong"];
+const DEBAT = ["Kerja kantoran lebih enak daripada usaha sendiri.","Anak sekolah gak boleh bawa HP.","Tinggal di desa lebih bahagia daripada di kota.","Belajar dari YouTube lebih efektif daripada di kelas.","Media sosial lebih banyak bawa dampak buruk.","PR sekolah harus dihapus.","AI bakal ngegantiin banyak pekerjaan manusia.","Lebih baik punya sedikit teman dekat daripada banyak kenalan.","Nikah muda itu pilihan yang bagus.","Gaji besar lebih penting daripada kerjaan yang disukai.","Sarapan itu wajib.","Mudik lebaran udah gak perlu di zaman video call.","Bangun pagi bikin orang lebih sukses.","Jajan di warung lebih baik daripada di kafe.","Kuliah itu wajib buat sukses.","Main game itu buang waktu.","Liburan ke gunung lebih seru daripada ke pantai.","Uang bisa beli kebahagiaan.","Orang introvert lebih cocok jadi pemimpin.","Belanja online lebih hemat daripada ke pasar.","Anak muda sekarang lebih susah sukses dibanding zaman dulu.","Hewan peliharaan terbaik itu kucing.","Seragam sekolah sebaiknya dihapus.","Kerja dari rumah lebih produktif.","Gotong royong mulai hilang di masyarakat.","Lebih baik jujur walau nyakitin.","Bahasa Inggris harus diajarin dari TK.","Konten edukasi kalah sama konten hiburan."];
+const SITUASI = ["Lu jadi MC dadakan di nikahan sepupu. Buka acaranya.","Kasih sambutan sebagai ketua panitia lomba 17 Agustus.","Presentasiin hasil kerja lu ke bos dalam waktu singkat.","Lu ketemu calon investor di lift. Jelasin usaha lu.","Kenalin diri lu di hari pertama kerja.","Kasih kata sambutan di acara perpisahan sekolah.","Yakinin warga buat ikut kerja bakti Minggu ini.","Lu jadi pemandu wisata. Sambut rombongan yang baru dateng.","Minta maaf ke pelanggan karena pesanannya telat.","Kasih motivasi ke tim lu yang lagi kalah 0-2 pas turun minum.","Jelasin cara pake aplikasi baru ke orang tua.","Lu jadi narasumber podcast. Jawab: apa kesibukan lu sekarang?","Kasih toast buat ulang tahun sahabat lu.","Jawab pertanyaan HRD: kenapa kami harus milih kamu?","Buka rapat RT soal iuran kebersihan.","Lu ketua kelas. Umumin perubahan jadwal ujian.","Nawarin produk UMKM tetangga lu ke rombongan tamu.","Lu dosen tamu. Buka kelas tentang hal yang lu kuasain.","Ngomong di depan warga soal rencana desa wisata.","Kasih testimoni jujur soal tempat makan favorit lu.","Lu juara lomba. Kasih pidato kemenangan.","Tolak ajakan temen dengan sopan tapi tegas."];
+const FW = {
+  prep:{nama:"PREP",langkah:["Poin: sebut pendapat lu di kalimat pertama.","Alasan: kenapa lu mikir gitu.","Contoh: satu cerita atau kejadian nyata.","Poin lagi: ulang pendapat lu buat nutup."],eg:"\"Payung itu barang paling diremehin. Soalnya baru dicari pas udah basah. Minggu lalu gw kehujanan di terminal... Makanya, payung itu kayak tabungan: gak keliatan penting sampe lu butuh.\""},
+  waktu:{nama:"Dulu, Kini, Nanti",langkah:["Dulu: gimana hal ini di masa lalu atau waktu lu kecil.","Kini: gimana sekarang.","Nanti: gimana harapan atau tebakan lu ke depan."],eg:"\"Dulu mudik itu naik bus 12 jam. Sekarang ada tol, 5 jam nyampe. Nanti mungkin mudiknya cukup video call, tapi rasa pulangnya gak bakal sama.\""},
+  cerita:{nama:"Cerita 4 babak",langkah:["Situasi: lagi di mana, kapan, sama siapa.","Masalah: apa yang salah.","Aksi: apa yang lu lakuin.","Pelajaran: apa yang lu dapet."],eg:"\"Jam 6 pagi gw di stasiun. Tiket gw ternyata buat besok. Gw ngobrol sama petugas, akhirnya dapet kursi sisa. Sejak itu gw selalu cek tanggal dua kali.\""},
+  masalah:{nama:"Masalah, Solusi, Manfaat",langkah:["Masalah: apa yang bikin orang susah.","Solusi: apa jalan keluarnya.","Manfaat: apa untungnya kalau dijalanin."],eg:"Cocok buat mode Jualan dan Situasi."},
+  tiga:{nama:"Tiga alasan",langkah:["Kalimat pendapat.","Alasan pertama, singkat.","Alasan kedua, singkat.","Alasan ketiga, yang paling kuat.","Ulang pendapat."],eg:"Cocok buat mode Debat. Otak pendengar paling gampang nginget tiga hal."},
+  bandingin:{nama:"Bandingin dua hal",langkah:["Sebut dua hal yang mau dibandingin.","Samanya apa.","Bedanya apa.","Lu pilih yang mana dan kenapa."],eg:"\"Kopi sama teh sama-sama nemenin begadang. Bedanya, kopi bikin melek, teh bikin tenang. Gw pilih teh, soalnya...\""}
+};
+const OPENERS = ["\"Gw mau mulai dari satu pertanyaan: ...?\"","\"Minggu lalu kejadian sesuatu yang bikin gw mikir soal ini.\"","\"Kebanyakan orang ngira ... Padahal ...\"","\"Bayangin lu lagi ...\"","\"Ada satu hal yang jarang dibahas soal ...\"","\"Gw pernah salah besar soal ini.\"","\"Kalau gw harus jelasin ini dalam satu kata, katanya ...\"","\"Angkat tangan, siapa yang pernah ...? Gw juga.\""];
+const CLOSERS = ["\"Jadi, intinya satu: ...\"","\"Kalau lu cuma inget satu hal dari omongan gw, inget ini: ...\"","\"Mulai besok, coba ... Satu hal aja.\"","\"Itu kenapa gw percaya ...\"","\"Gw balikin pertanyaannya ke lu: ...?\"","\"Dan itu yang gw pelajari dari sebuah ... (balik ke kata awal).\""];
+const RESCUE = ["Ulang kata topiknya pelan-pelan. Itu ngasih otak lu 2 detik buat mikir.","Ceritain pengalaman pertama lu sama hal itu. Semua orang punya cerita pertama.","Pake \"Pertama ... kedua ... ketiga ...\". Angka bikin lu tetap jalan.","Tanya balik ke penonton: \"Lu pernah gak ...?\" terus jawab sendiri.","Diem aja 2 detik, tarik napas, senyum. Jeda keliatan percaya diri, bukan blank.","Kalau beneran mentok, langsung ke penutup. Selesai lebih cepet lebih baik daripada muter-muter."];
+const SWAP = [["eee...","diem 1 detik, tarik napas"],["jadi, jadi...","titik. mulai kalimat baru"],["kayak...","sebut contohnya langsung"],["anu...","\"maksud gw ...\""],["terus, terus...","\"setelah itu\" atau jeda"],["gitu loh","berhenti, biar kalimatnya nyampe"]];
+const CHECKS = ["5 detik pertama: langsung masuk atau basa-basi dulu?","Mata: lebih banyak liat kamera atau liat ke bawah?","Tangan: diem kaku, masuk saku, atau ikut ngejelasin?","Suara: kedengeran jelas di bagian akhir kalimat, atau ngilang?","Tempo: kecepetan pas gugup? Ada jeda gak?","Struktur: penonton bisa nyebut poin lu dalam satu kalimat?","Penutup: berhenti dengan kalimat yang jelas, atau \"udah gitu aja\"?"];
+const CRIT = [["Pembuka","Langsung nendang di 5 detik pertama"],["Struktur","Poinnya jelas dan runtut"],["Kontak mata","Liat kamera, bukan lantai"],["Suara & tempo","Jelas, gak kecepetan, ada jeda"],["Bahasa tubuh","Tangan dan badan rileks, gak kaku"],["Penutup","Selesai dengan kalimat yang kuat"]];
+const WEEKS = [
+ {t:"Berani mulai",goal:"Ngomong sampe waktu habis tanpa berhenti, sejelek apa pun isinya.",daily:["2 kartu kata acak tingkat mudah.","Rekam, jangan dihapus walau malu.","Tonton ulang sekali aja, terus isi rapor."],cek:"Lu berhenti di tengah atau terus sampe bunyi?",p:{mode:"kata",prep:60,talk:30,lvl:"mudah"}},
+ {t:"Mata ke kamera",goal:"Biasain liat lensa, bukan layar atau lantai.",daily:["Tempel stiker kecil di sebelah lensa sebagai titik fokus.","2 kartu kata acak.","Hitung berapa kali mata lu kabur dari kamera."],cek:"Persen waktu mata lu ke lensa.",p:{mode:"kata",prep:60,talk:60,lvl:"mudah"}},
+ {t:"Jeda, bukan eee",goal:"Ganti \"eee\" pake diem satu detik.",daily:["Sebelum mulai, latih: ngomong satu kalimat, diem, kalimat berikutnya.","2 kartu kata acak.","Hitung \"eee\" di rapor. Target turun tiap hari."],cek:"Jumlah \"eee\" dibanding minggu lalu.",p:{mode:"kata",prep:60,talk:60,lvl:"campur"}},
+ {t:"Struktur PREP",goal:"Tiap omongan punya poin, alasan, contoh, poin.",daily:["Pake struktur PREP pas persiapan.","2 kartu pertanyaan.","Cek: bisa gak lu nulis poin lu dalam satu kalimat abis nonton?"],cek:"Poin pertama keluar di 10 detik pertama?",p:{mode:"tanya",prep:60,talk:60,lvl:"campur",fw:"prep"}},
+ {t:"Suara & tempo",goal:"Suara dari perut, ujung kalimat gak ngilang.",daily:["Pemanasan: baca satu paragraf keras-keras, pelan banget.","2 kartu, ngomong 20% lebih pelan dari biasa.","Dengerin rekaman tanpa liat videonya."],cek:"Akhir kalimat kedengeran jelas?",p:{mode:"kata",prep:30,talk:60,lvl:"campur"}},
+ {t:"Tangan & badan",goal:"Tangan ikut ngejelasin, badan tegak tapi rileks.",daily:["Rekam setengah badan, tangan harus kelihatan.","Tiap poin, pake satu gerakan tangan.","2 kartu jualan."],cek:"Tangan masuk saku atau ngelipet? Berapa kali?",p:{mode:"jual",prep:60,talk:60}},
+ {t:"Bercerita",goal:"Bikin orang kebayang, bukan cuma denger.",daily:["Pake struktur Cerita 4 babak.","1 kartu 3 kata.","Masukin satu detail: nama tempat, jam, atau suara."],cek:"Ceritanya punya masalah yang jelas?",p:{mode:"tiga",prep:60,talk:90,fw:"cerita"}},
+ {t:"Pembuka yang nendang",goal:"5 detik pertama bikin orang mau dengerin.",daily:["Coba 3 pembuka beda buat kartu yang sama (cek Contekan).","Pilih yang paling enak, rekam full.","2 kartu pertanyaan."],cek:"Kalau lu penonton, lu skip gak di detik 5?",p:{mode:"tanya",prep:30,talk:60}},
+ {t:"Ngeyakinin orang",goal:"Bikin orang mau beli atau setuju.",daily:["Pake Masalah, Solusi, Manfaat.","2 kartu jualan. Barangnya aneh, tetep jual.","Tutup pake ajakan yang jelas."],cek:"Ada ajakan di akhir? Kedengeran yakin?",p:{mode:"jual",prep:30,talk:60}},
+ {t:"Debat",goal:"Belain posisi walau lu gak setuju.",daily:["Pake Tiga alasan.","1 kartu debat, terus ulang kartu yang sama dengan posisi kebalikannya.","Jangan pake \"menurut gw sih\" di awal."],cek:"Alasan ketiga paling kuat?",p:{mode:"debat",prep:60,talk:90,fw:"acak"}},
+ {t:"Situasi nyata",goal:"Siap kalau tiba-tiba disuruh ngomong di acara.",daily:["2 kartu situasi.","Bayangin penontonnya beneran ada, tatap kamera kayak tatap orang.","Pake nada yang cocok sama acaranya."],cek:"Nadanya pas sama suasananya?",p:{mode:"situasi",prep:60,talk:120}},
+ {t:"Improvisasi cepet",goal:"Mikir sambil ngomong, gak nunggu sempurna.",daily:["Persiapan cuma 15 detik.","3 kartu campur berturut-turut tanpa jeda.","Jangan ulang kalau salah. Lanjut aja."],cek:"Berapa lama jeda pertama lu sebelum ngomong?",p:{mode:"kata",prep:15,talk:60,lvl:"susah"}},
+ {t:"Panggung final",goal:"Ngomong 3 menit lancar, siap dipamerin.",daily:["1 kartu, ngomong 3 menit.","Pake semua: pembuka, struktur, cerita, penutup.","Hari terakhir: bandingin video Day 1 sama hari ini."],cek:"Bandingin rapor minggu 1 sama minggu 13.",p:{mode:"tanya",prep:90,talk:180}}
+];
+
+/* ---------- utils ---------- */
+const $=id=>document.getElementById(id);
+const S={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2200)}
+
+/* ---------- state ---------- */
+let cfg=Object.assign({mode:'kata',prep:60,talk:60,lvl:'campur',fw:'acak'},S.get('ns_cfg',{}));
+let card={word:'Payung',mode:'kata',text:'Payung'};
+let state='idle',endAt=0,total=0,raf=0,wake=null,last='';
+
+/* ---------- latihan ---------- */
+const MODE_LABEL={kata:'Kata acak',tiga:'3 kata',tanya:'Pertanyaan',jual:'Jualan',debat:'Debat',situasi:'Situasi'};
+const MODE_SUB={kata:'Ngomong apa aja soal kata ini sampe waktunya habis.',tiga:'Masukin ketiga kata ini ke satu cerita.',tanya:'Jawab pertanyaan ini kayak lagi diwawancara.',jual:'Jual barang ini ke gw. Bikin gw pengen beli.',debat:'Belain posisi ini walau lu gak setuju.',situasi:'Anggap ini kejadian beneran. Lu yang megang mic.'};
+const pool=()=>cfg.lvl==='mudah'?MUDAH:cfg.lvl==='susah'?SUSAH:MUDAH.concat(SUSAH);
+function fresh(a){let w;for(let i=0;i<10;i++){w=pick(a);if(w!==last)break}last=w;return w}
+function deal(){
+  const w=$('word');w.className='cue-word';let html='',text='';
+  if(cfg.mode==='kata'){text=cap(fresh(pool()));html=esc(text)}
+  else if(cfg.mode==='tiga'){const s=new Set();while(s.size<3)s.add(cap(pick(pool())));tiga=[...s];text=tiga.join(', ');html=tigaHTML();w.classList.add('three')}
+  else if(cfg.mode==='tanya'){text=fresh(TANYA);html=esc(text);w.classList.add('q')}
+  else if(cfg.mode==='jual'){const b=fresh(BARANG);text='Jual '+b;html=esc(cap(b));w.classList.add('three')}
+  else if(cfg.mode==='debat'){text=fresh(DEBAT);const pos=Math.random()<.5?'PRO':'KONTRA';text+=' ('+pos+')';html=esc(text.replace(/ \((PRO|KONTRA)\)$/,''));w.classList.add('q');$('sub').innerHTML='Posisi lu: <span class="pos">'+pos+'</span>';}
+  else {text=fresh(SITUASI);html=esc(text);w.classList.add('q')}
+  w.innerHTML=html;card={mode:cfg.mode,text};
+  $('tap').textContent=cfg.mode==='tiga'?'Ketuk satu kata buat ganti kata itu aja, ketuk kartu buat acak semua':'Ketuk kartu buat acak';
+  const c=$('cue');c.classList.remove('deal');void c.offsetWidth;c.classList.add('deal');
+  if(cfg.mode!=='debat')$('sub').textContent=MODE_SUB[cfg.mode];
+  $('cue-mode').textContent=MODE_LABEL[cfg.mode];
+  $('cue-no').textContent='Kartu '+String(S.get('ns_count',0)+1).padStart(2,'0');
+  setHint();
+}
+let tiga=[];
+function tigaHTML(){return tiga.map((t,i)=>'<button class="w" data-i="'+i+'" title="Ganti kata ini">'+esc(t)+'</button>').join('<span class="sep"> / </span>')}
+function swapOne(i){let n;for(let k=0;k<20;k++){n=cap(pick(pool()));if(!tiga.includes(n))break}tiga[i]=n;card.text=tiga.join(', ');$('word').innerHTML=tigaHTML();const b=$('word').querySelector('[data-i="'+i+'"]');b.classList.add('pop');b.focus({preventScroll:true})}
+function setHint(){
+  let k=cfg.fw;
+  if(k==='off'){$('hint').hidden=true;return}
+  if(k==='acak')k=cfg.mode==='jual'||cfg.mode==='situasi'?'masalah':cfg.mode==='debat'?'tiga':cfg.mode==='tiga'?'cerita':pick(['prep','waktu','bandingin','prep']);
+  const f=FW[k];$('hint').hidden=false;
+  $('hint').innerHTML='<b>Struktur: '+esc(f.nama)+'</b> · '+f.langkah.map(s=>esc(s.split(':')[0])).join(' → ');
+}
+function ticks(){const t=$('ticks');t.innerHTML='';for(let i=0;i<30;i++)t.appendChild(document.createElement('i'))}
+function setTicks(frac){const on=Math.round(frac*30);[...$('ticks').children].forEach((el,i)=>el.classList.toggle('on',i<on))}
+
+let ac=null;
+function beep(f=880,d=.18,n=1){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();for(let i=0;i<n;i++){const t=ac.currentTime+i*.26,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d+.02)}}catch(e){}}
+
+function phase(p){
+  state=p;const t=$('tally');
+  t.className='tally'+(p==='prep'?' prep':p==='talk'?' air':p==='done'?' done':'');
+  $('phase').textContent=p==='prep'?'PERSIAPAN':p==='talk'?'ON AIR':p==='done'?'SELESAI':'STANDBY';
+  $('ticks').classList.toggle('air',p==='talk');
+  const run=p==='prep'||p==='talk';document.body.classList.toggle('running',run);
+  $('start').hidden=run;$('stop').hidden=!run;$('skip').hidden=p!=='prep';$('toRapor').hidden=p!=='done';
+  $('start').textContent=p==='done'?'Kartu berikutnya':'Mulai';
+}
+function info(){$('phaseinfo').textContent='Persiapan '+fmt(cfg.prep)+' · Ngomong '+fmt(cfg.talk)}
+function run(p,secs){phase(p);total=secs;endAt=performance.now()+secs*1000;loop()}
+function loop(){
+  cancelAnimationFrame(raf);const left=(endAt-performance.now())/1000;
+  $('clock').textContent=fmt(left);$('clock').classList.toggle('warn',state==='talk'&&left<=10);
+  setTicks(1-Math.max(0,left)/total);
+  if(state==='talk'&&left<=3&&left>0){const s=Math.ceil(left);if(s!==loop.l){loop.l=s;beep(660,.08)}}
+  if(left<=0){if(state==='prep'){beep(990,.25);run('talk',cfg.talk);return}if(state==='talk'){beep(520,.3,2);done();return}}
+  raf=requestAnimationFrame(loop);
+}
+function done(){
+  phase('done');$('clock').textContent='0:00';$('clock').classList.remove('warn');setTicks(1);
+  const n=S.get('ns_count',0)+1;S.set('ns_count',n);S.set('ns_last',card);
+  const prog=S.get('ns_prog',null);if(prog){const d=dayNo(prog);if(d>=1&&d<=90&&!prog.done.includes(d)){prog.done.push(d);S.set('ns_prog',prog)}}
+  stats();release();
+}
+function stop(){cancelAnimationFrame(raf);phase('idle');$('clock').textContent=fmt(cfg.prep);$('clock').classList.remove('warn');setTicks(0);release()}
+async function start(){
+  if(state==='done'){deal();stop();return}
+  beep(880,.12);loop.l=null;
+  try{if('wakeLock' in navigator)wake=await navigator.wakeLock.request('screen')}catch(e){wake=null}
+  run('prep',cfg.prep);
+}
+function release(){try{wake&&wake.release()}catch(e){}wake=null}
+function bindChips(id,key,after){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{cfg[key]=isNaN(+b.dataset.v)?b.dataset.v:+b.dataset.v;S.set('ns_cfg',cfg);paintChips();after&&after()})}
+function paintChips(){
+  document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===cfg.mode)));
+  [['prep','prep'],['talk','talk'],['lvl','lvl'],['fw','fw']].forEach(([id,k])=>document.querySelectorAll('#'+id+' button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v==String(cfg[k])))));
+  if(state==='idle')$('clock').textContent=fmt(cfg.prep);info();
+}
+document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{cfg.mode=b.dataset.mode;S.set('ns_cfg',cfg);paintChips();deal()});
+bindChips('prep','prep');bindChips('talk','talk');bindChips('lvl','lvl',deal);bindChips('fw','fw',setHint);
+$('start').onclick=start;$('stop').onclick=stop;$('reroll').onclick=()=>{if(state==='prep'||state==='talk')return;deal()};
+$('cue').addEventListener('click',e=>{if(state==='prep'||state==='talk')return;const b=e.target.closest('.w');if(b){swapOne(+b.dataset.i);return}deal()});
+$('skip').onclick=()=>{beep(990,.25);run('talk',cfg.talk)};
+document.addEventListener('keydown',e=>{
+  if(location.hash&&location.hash!=='#latihan')return;
+  if(e.target.closest('button,input,textarea,a'))return;
+  if(e.key===' '){e.preventDefault();(state==='prep'||state==='talk')?stop():start()}
+  else if((e.key==='r'||e.key==='R')&&state!=='prep'&&state!=='talk')deal();
+});
+
+/* ---------- program ---------- */
+function dayNo(p){const s=new Date(p.start+'T00:00:00'),t=new Date(todayKey()+'T00:00:00');return Math.floor((t-s)/864e5)+1}
+let selWeek=null;
+function renderProgram(){
+  const p=S.get('ns_prog',null),today=p?dayNo(p):0,doneSet=new Set(p?p.done:[]);
+  const curW=p?Math.min(13,Math.max(1,Math.ceil(Math.min(today,90)/7))):1;
+  if(selWeek==null)selWeek=curW;
+  $('prog-start').hidden=!!p;$('prog-reset').hidden=!p;
+  $('prog-text').textContent=p?(today>90?'Program selesai · ':'Hari '+Math.max(1,today)+' dari 90 · ')+doneSet.size+' hari latihan':'Belum mulai. Pencet tombol buat jadiin hari ini Hari 1.';
+  $('prog-bar').style.width=(doneSet.size/90*100)+'%';
+  const g=$('weekgrid');g.innerHTML='';
+  WEEKS.forEach((w,i)=>{
+    const row=document.createElement('div');row.className='wk'+(p&&i+1===curW?' cur':'');
+    row.innerHTML='<span>MG '+String(i+1).padStart(2,'0')+'</span>';
+    for(let j=0;j<7;j++){
+      const d=i*7+j+1;if(d>90){row.appendChild(document.createElement('span'));continue}
+      const b=document.createElement('button');b.className='day'+(doneSet.has(d)?' done':'')+(p&&d===today?' today':'')+(i+1===selWeek?' sel':'');
+      b.textContent=d;b.title='Hari '+d+' · '+w.t;b.setAttribute('aria-label','Hari '+d+(doneSet.has(d)?', sudah latihan':''));
+      b.onclick=()=>{selWeek=i+1;if(p){const q=S.get('ns_prog',p);const k=q.done.indexOf(d);k>=0?q.done.splice(k,1):q.done.push(d);S.set('ns_prog',q)}renderProgram();stats()};
+      row.appendChild(b);
+    }
+    g.appendChild(row);
+  });
+  const w=WEEKS[selWeek-1];
+  $('weekdetail').innerHTML=`<span class="kicker">Minggu ${selWeek} · hari ${(selWeek-1)*7+1}–${Math.min(90,selWeek*7)}</span><h2>${esc(w.t)}</h2><p class="lede" style="color:var(--ink)">${esc(w.goal)}</p>
+  <div><span class="kicker">Latihan harian</span><ul>${w.daily.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul></div>
+  <div><span class="kicker">Yang dicek di rekaman</span><p style="margin:4px 0 0">${esc(w.cek)}</p></div>
+  <div class="preset"><span class="tag">${MODE_LABEL[w.p.mode]}</span><span class="tag">persiapan ${fmt(w.p.prep)}</span><span class="tag">ngomong ${fmt(w.p.talk)}</span>${w.p.lvl?'<span class="tag">kata '+w.p.lvl+'</span>':''}</div>
+  <div class="controls"><button class="btn go sm" id="usePreset">Latihan pake setelan minggu ini</button></div>`;
+  $('usePreset').onclick=()=>{Object.assign(cfg,w.p);S.set('ns_cfg',cfg);paintChips();deal();location.hash='#latihan'};
+}
+$('prog-start').onclick=()=>{S.set('ns_prog',{start:todayKey(),done:[]});selWeek=1;renderProgram();stats();toast('Hari 1 dimulai')};
+$('prog-reset').onclick=function(){if(!this.dataset.sure){this.dataset.sure=1;this.textContent='Yakin? Pencet lagi';setTimeout(()=>{delete this.dataset.sure;this.textContent='Ulang dari awal'},3000);return}
+  delete this.dataset.sure;this.textContent='Ulang dari awal';try{localStorage.removeItem('ns_prog')}catch(e){}selWeek=null;renderProgram();stats()};
+
+/* ---------- contekan ---------- */
+function renderSheet(){
+  $('sheet').innerHTML=Object.values(FW).map(f=>`<div class="fw"><h3>${esc(f.nama)}</h3><ol>${f.langkah.map(s=>'<li>'+esc(s)+'</li>').join('')}</ol><div class="eg">${esc(f.eg)}</div></div>`).join('');
+  $('openers').innerHTML=OPENERS.map(s=>'<p>'+esc(s)+'</p>').join('');
+  $('closers').innerHTML=CLOSERS.map(s=>'<p>'+esc(s)+'</p>').join('');
+  $('rescue').innerHTML=RESCUE.map(s=>'<p>'+esc(s)+'</p>').join('');
+  $('swap').innerHTML=SWAP.map(([a,b])=>'<div>'+esc(a)+'</div><div>'+esc(b)+'</div>').join('');
+  $('checks').innerHTML=CHECKS.map(s=>'<p>'+esc(s)+'</p>').join('');
+}
+
+/* ---------- rapor ---------- */
+let scores=CRIT.map(()=>0),eee=0;
+function renderCrit(){
+  $('crit').innerHTML=CRIT.map(([n,d],i)=>`<div class="critrow"><div>${esc(n)}<small>${esc(d)}</small></div><div class="score" role="group" aria-label="${esc(n)}">${[1,2,3,4,5].map(v=>`<button type="button" data-i="${i}" data-v="${v}" aria-pressed="${scores[i]===v}">${v}</button>`).join('')}</div></div>`).join('');
+  $('crit').querySelectorAll('button').forEach(b=>b.onclick=()=>{scores[+b.dataset.i]=+b.dataset.v;renderCrit()});
+}
+$('e-plus').onclick=()=>{eee++;$('e-val').textContent=eee};
+$('e-min').onclick=()=>{eee=Math.max(0,eee-1);$('e-val').textContent=eee};
+$('rform').addEventListener('submit',e=>{
+  e.preventDefault();
+  if(scores.some(s=>!s)){toast('Isi semua nilai 1–5 dulu');return}
+  const log=S.get('ns_log',[]);
+  log.push({d:todayKey(),topic:$('r-topic').value.trim()||'Tanpa topik',scores:scores.slice(),eee,note:$('r-note').value.trim()});
+  S.set('ns_log',log);scores=CRIT.map(()=>0);eee=0;$('e-val').textContent=0;$('r-note').value='';$('r-topic').value='';
+  renderCrit();renderLog();toast('Rapor kesimpen');
+});
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+function renderLog(){
+  const log=S.get('ns_log',[]);
+  const last=S.get('ns_last',null);if(last&&!$('r-topic').value)$('r-topic').value=last.text;
+  if(!log.length){$('log').innerHTML='<div class="empty">Belum ada rapor. Abis latihan dan nonton rekaman, isi form di atas.</div>';$('chart').innerHTML='<div class="empty">Grafik muncul setelah 2 rapor.</div>';return}
+  $('log').innerHTML=log.map((r,i)=>({r,i})).reverse().map(({r,i})=>`<div class="entry"><div class="avg">${avg(r.scores).toFixed(1)}</div><div style="min-width:0"><div class="t">${esc(r.topic)}</div><div class="meta">${esc(r.d)} · ${r.eee}× "eee"${r.note?' · '+esc(r.note):''}</div></div><button class="x" data-i="${i}">Hapus</button></div>`).join('');
+  $('log').querySelectorAll('.x').forEach(b=>b.onclick=()=>{if(!b.classList.contains('sure')){b.classList.add('sure');b.textContent='Yakin?';return}const l=S.get('ns_log',[]);l.splice(+b.dataset.i,1);S.set('ns_log',l);renderLog()});
+  drawChart(log.slice(-30));
+}
+function drawChart(log){
+  if(log.length<2){$('chart').innerHTML='<div class="empty">Grafik muncul setelah 2 rapor.</div>';return}
+  const W=640,H=200,L=34,R=34,T=14,B=26,n=log.length,x=i=>L+(W-L-R)*(n===1?0:i/(n-1));
+  const maxE=Math.max(5,...log.map(r=>r.eee)),yS=v=>T+(H-T-B)*(1-(v-1)/4),yE=v=>T+(H-T-B)*(1-v/maxE);
+  let g='';[1,2,3,4,5].forEach(v=>{g+=`<line x1="${L}" x2="${W-R}" y1="${yS(v)}" y2="${yS(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${yS(v)+4}" text-anchor="end" fill="var(--mute)" font-size="11" font-family="JetBrains Mono, monospace">${v}</text>`});
+  g+=`<text x="${W-R+8}" y="${yE(maxE)+4}" fill="var(--air)" font-size="11" font-family="JetBrains Mono, monospace">${maxE}</text><text x="${W-R+8}" y="${yE(0)+4}" fill="var(--air)" font-size="11" font-family="JetBrains Mono, monospace">0</text>`;
+  const bw=Math.max(3,Math.min(14,(W-L-R)/n*.4));
+  log.forEach((r,i)=>{g+=`<rect x="${x(i)-bw/2}" y="${yE(r.eee)}" width="${bw}" height="${yE(0)-yE(r.eee)}" fill="var(--air)" opacity=".55" rx="2"/>`});
+  const pts=log.map((r,i)=>x(i)+','+yS(avg(r.scores))).join(' ');
+  g+=`<polyline points="${pts}" fill="none" stroke="var(--cue)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  log.forEach((r,i)=>{g+=`<circle cx="${x(i)}" cy="${yS(avg(r.scores))}" r="${i===n-1?5:3}" fill="var(--cue)"/>`});
+  g+=`<text x="${L}" y="${H-6}" fill="var(--mute)" font-size="11" font-family="JetBrains Mono, monospace">${esc(log[0].d)}</text><text x="${W-R}" y="${H-6}" text-anchor="end" fill="var(--mute)" font-size="11" font-family="JetBrains Mono, monospace">${esc(log[n-1].d)}</text>`;
+  $('chart').innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafik nilai rata-rata dan jumlah eee">${g}</svg>`;
+}
+
+/* ---------- shell ---------- */
+function stats(){
+  $('st-sesi').textContent=S.get('ns_count',0);
+  const p=S.get('ns_prog',null);$('st-prog').textContent=p?('hari '+Math.min(90,Math.max(1,dayNo(p)))+'/90'):'belum mulai';
+}
+const VIEWS=['latihan','program','contekan','rapor'];
+function route(){
+  const v=VIEWS.includes(location.hash.slice(1))?location.hash.slice(1):'latihan';
+  VIEWS.forEach(k=>{$('v-'+k).hidden=k!==v;$('nav-'+k).setAttribute('aria-current',k===v?'page':'false')});
+  if(v==='program')renderProgram();if(v==='rapor')renderLog();
+}
+window.addEventListener('hashchange',route);
+ticks();paintChips();deal();renderSheet();renderCrit();stats();route();
+</script>
+
+</body>
+</html>
